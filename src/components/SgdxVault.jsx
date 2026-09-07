@@ -294,6 +294,19 @@ export function SgdxVault() {
     setIsRequestingAirdrop(false);
   }, [connected, publicKey, loadDevnetSolBalance, setupStatus]);
 
+  const refreshPythOracleDisplay = useCallback(async () => {
+    try {
+      const data = await fetchPythUsdSgdPrice(120);
+      setPythOracleInfo(data);
+    } catch (e) {
+      console.warn("Pyth oracle initial fetch warning:", e.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshPythOracleDisplay();
+  }, [refreshPythOracleDisplay]);
+
   const loadState = useCallback(async () => {
     try {
       const vs = await executeWithRpcFailover(connection, (conn) => fetchVaultState(conn));
@@ -650,19 +663,6 @@ export function SgdxVault() {
       pythStatus.set(STATUS.ERROR, `Pyth Price Push failed: ${e.message}`);
     }
   }, [connected, publicKey, vaultInitialized, connection, sendAndConfirm, loadState, pythStatus, checkSolPreflight]);
-
-  const refreshPythOracleDisplay = useCallback(async () => {
-    try {
-      const data = await fetchPythUsdSgdPrice(120);
-      setPythOracleInfo(data);
-    } catch (e) {
-      console.warn("Pyth oracle initial fetch warning:", e.message);
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshPythOracleDisplay();
-  }, [refreshPythOracleDisplay]);
 
   const handleFaucet = useCallback(async () => {
     if (!connected || !publicKey) {
