@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { ConnectionProvider, WalletProvider, useWallet } from '@solana/wallet-adapter-react';
 import { SgdxVault } from './components/SgdxVault';
 import { RPC_URL } from './config';
@@ -21,6 +22,42 @@ function CustomWalletConnectButton() {
     );
   }
 
+  const modalContent = showModal ? (
+    <div className="wallet-modal-overlay" onClick={() => setShowModal(false)}>
+      <div className="wallet-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="wallet-modal-header">
+          <h3>Select Wallet</h3>
+          <button className="modal-close-btn" onClick={() => setShowModal(false)}>✕</button>
+        </div>
+        <div className="wallet-options-list">
+          {wallets.map((wallet) => (
+            <button
+              key={wallet.adapter.name}
+              className="wallet-option-item"
+              onClick={async () => {
+                setShowModal(false);
+                try {
+                  select(wallet.adapter.name);
+                } catch (e) {
+                  console.warn('Wallet select error:', e);
+                }
+              }}
+            >
+              {wallet.adapter.icon && (
+                <img
+                  src={wallet.adapter.icon}
+                  alt={wallet.adapter.name}
+                  className="wallet-icon"
+                />
+              )}
+              <span>{wallet.adapter.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <>
       <button
@@ -31,41 +68,7 @@ function CustomWalletConnectButton() {
         {connecting ? 'Connecting...' : 'Connect Wallet'}
       </button>
 
-      {showModal && (
-        <div className="wallet-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="wallet-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="wallet-modal-header">
-              <h3>Select Wallet</h3>
-              <button className="modal-close-btn" onClick={() => setShowModal(false)}>✕</button>
-            </div>
-            <div className="wallet-options-list">
-              {wallets.map((wallet) => (
-                <button
-                  key={wallet.adapter.name}
-                  className="wallet-option-item"
-                  onClick={async () => {
-                    setShowModal(false);
-                    try {
-                      select(wallet.adapter.name);
-                    } catch (e) {
-                      console.warn('Wallet select error:', e);
-                    }
-                  }}
-                >
-                  {wallet.adapter.icon && (
-                    <img
-                      src={wallet.adapter.icon}
-                      alt={wallet.adapter.name}
-                      className="wallet-icon"
-                    />
-                  )}
-                  <span>{wallet.adapter.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {typeof document !== 'undefined' && modalContent ? ReactDOM.createPortal(modalContent, document.body) : modalContent}
     </>
   );
 }

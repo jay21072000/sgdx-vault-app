@@ -5,8 +5,6 @@ function check(urlStr) {
     console.log('=== Checking:', urlStr, '===');
     console.log('Status:', res.statusCode);
     console.log('Cache-Control:', res.headers['cache-control']);
-    console.log('Pragma:', res.headers['pragma']);
-    console.log('Expires:', res.headers['expires']);
     console.log('x-vercel-cache:', res.headers['x-vercel-cache']);
     let body = '';
     res.on('data', chunk => body += chunk);
@@ -20,4 +18,4 @@ function check(urlStr) {
 }
 
 check('https://sgdx-vault-app.vercel.app');
-check('https://sgdx-vault-app.vercel.app/assets/app-v4-BlJ9Mg52.js');
+check('https://sgdx-vault-app.vercel.app/assets/app-v4-CBsABOJV.js');

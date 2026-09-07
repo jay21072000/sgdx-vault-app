@@ -655,11 +655,11 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
-  z-index: 1000;
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -672,8 +672,9 @@ body {
   border-radius: 20px;
   padding: 24px;
   width: 100%;
-  max-width: 380px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  max-width: 400px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  margin: auto;
 }
 
 .wallet-modal-header {
