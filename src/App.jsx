@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { SgdxVault } from './components/SgdxVault';
 import { RPC_URL } from './config';
@@ -8,7 +9,10 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 
 export function App() {
   const endpoint = useMemo(() => RPC_URL, []);
-  const wallets = useMemo(() => [], []);
+  const wallets = useMemo(
+    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+    []
+  );
 
   return (
     <ConnectionProvider endpoint={endpoint}>

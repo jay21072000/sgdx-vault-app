@@ -350,6 +350,9 @@ export function SgdxVault() {
 
   const isPriceOutdatedWarning = isOnChainStale || isPriceDeviated;
 
+  useEffect(() => { loadState(); }, [loadState]);
+  useEffect(() => { loadBalances(); }, [loadBalances]);
+
   useEffect(() => {
     const interval = setInterval(async () => {
       await loadState();
