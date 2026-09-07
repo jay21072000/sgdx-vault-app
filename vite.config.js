@@ -201,4 +201,10 @@ export default defineConfig({
       protocolImports: true,
     }),
   ],
+  build: {
+    target: 'esnext',
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
 })
