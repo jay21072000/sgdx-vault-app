@@ -1,0 +1,20 @@
+[toolchain]
+anchor_version = "0.30.1"
+solana_version = "2.1.0"
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+sgdx_vault = "2vaoPv3xyoY7r8GWtcTNZxG7Q2a2j3JhC2qeu71JSmqq"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
