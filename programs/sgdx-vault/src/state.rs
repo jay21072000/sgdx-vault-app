@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+pub const MAX_PRICE_AGE_SECONDS: i64 = 300; // 5 minutes
+
 /// On-chain state for the SGDX Vault.
 /// Stored at PDA: seeds = [b"vault_state"]
 #[account]
@@ -19,12 +21,14 @@ pub struct VaultState {
     /// e.g. numerator=135, denominator=100 → 1 USD = 1.35 SGD
     pub price_numerator: u64,
     pub price_denominator: u64,
+    /// Timestamp (unix_timestamp) of the last price update
+    pub last_price_update_timestamp: i64,
     /// Total collateral deposited (in smallest units) — for accounting/monitoring
     pub total_collateral_deposited: u64,
     /// Total SGDX minted (in smallest units)
     pub total_sgdx_minted: u64,
     /// Reserved space for future fields without redeployment
-    pub _reserved: [u8; 64],
+    pub _reserved: [u8; 56],
 }
 
 impl VaultState {
@@ -37,9 +41,10 @@ impl VaultState {
         + 1    // vault_state_bump
         + 8    // price_numerator
         + 8    // price_denominator
+        + 8    // last_price_update_timestamp
         + 8    // total_collateral_deposited
         + 8    // total_sgdx_minted
-        + 64;  // _reserved
+        + 56;  // _reserved
 
     /// Calculate SGDX to mint for a given collateral deposit.
     /// Uses u128 intermediate math to prevent overflow.

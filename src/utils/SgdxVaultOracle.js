@@ -67,7 +67,7 @@ export async function fetchPythUsdSgdPrice(maxAgeSeconds = 60) {
           price: rawPrice,
           publishTime,
           ageSec,
-          source: "Live Pyth/FX Price Feed",
+          source: "FX Fallback (NOT Pyth)",
           feedId: PYTH_USD_SGD_FEED_ID,
         };
       }

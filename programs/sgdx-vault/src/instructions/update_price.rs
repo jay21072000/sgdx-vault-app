@@ -27,6 +27,7 @@ pub fn handler(
     let vault_state = &mut ctx.accounts.vault_state;
     vault_state.price_numerator = price_numerator;
     vault_state.price_denominator = price_denominator;
+    vault_state.last_price_update_timestamp = Clock::get()?.unix_timestamp;
 
     msg!(
         "Mock price updated: {}/{} (= {} USD per SGD × 1000)",

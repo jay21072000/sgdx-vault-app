@@ -75,6 +75,7 @@ const VaultStateLayout = borsh.struct([
   borsh.u8("vault_state_bump"),
   borsh.u64("price_numerator"),
   borsh.u64("price_denominator"),
+  borsh.i64("last_price_update_timestamp"),
   borsh.u64("total_collateral_deposited"),
   borsh.u64("total_sgdx_minted"),
 ]);

@@ -87,6 +87,14 @@ pub fn handler(ctx: Context<DepositCollateral>, amount: u64) -> Result<()> {
 
     let vault_state = &ctx.accounts.vault_state;
 
+    // ── Freshness check: reject if on-chain price is older than MAX_PRICE_AGE_SECONDS ──
+    let clock = Clock::get()?;
+    let age = clock.unix_timestamp.saturating_sub(vault_state.last_price_update_timestamp);
+    require!(
+        age <= crate::state::MAX_PRICE_AGE_SECONDS,
+        VaultError::PriceStale
+    );
+
     // ── Calculate SGDX to mint (overflow-safe u128 math) ──────────────────
     // price = price_numerator / price_denominator = USD_per_SGD (e.g. 1.35)
     // deposit 1 devUSDT → 1.35 SGDX

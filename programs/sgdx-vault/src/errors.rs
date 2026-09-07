@@ -34,4 +34,7 @@ pub enum VaultError {
 
     #[msg("Price numerator cannot be zero")]
     ZeroNumerator,
+
+    #[msg("On-chain price feed is stale (> 5 mins old). Admin must update price.")]
+    PriceStale,
 }

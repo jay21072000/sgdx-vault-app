@@ -332,12 +332,32 @@ export function SgdxVault() {
     }
   }, [connection, publicKey, collateralMint, sgdxMint, loadDevnetSolBalance]);
 
-  useEffect(() => { loadState(); }, [loadState]);
-  useEffect(() => { loadBalances(); }, [loadBalances]);
-
   const onChainPriceRatio = vaultState
     ? (Number(vaultState.price_numerator) / Number(vaultState.price_denominator)).toFixed(4)
     : null;
+
+  const nowUnix = Math.floor(Date.now() / 1000);
+  const onChainTimestamp = vaultState?.last_price_update_timestamp ? Number(vaultState.last_price_update_timestamp) : 0;
+  const onChainAgeSeconds = onChainTimestamp > 0 ? Math.max(0, nowUnix - onChainTimestamp) : null;
+  const isOnChainStale = onChainAgeSeconds !== null && onChainAgeSeconds > 300;
+
+  const liveOraclePrice = pythOracleInfo?.price ? Number(pythOracleInfo.price) : null;
+  const onChainRatio = onChainPriceRatio ? Number(onChainPriceRatio) : null;
+  const priceDiffPercent = (liveOraclePrice && onChainRatio)
+    ? (Math.abs(liveOraclePrice - onChainRatio) / liveOraclePrice) * 100
+    : 0;
+  const isPriceDeviated = priceDiffPercent >= 1.0;
+
+  const isPriceOutdatedWarning = isOnChainStale || isPriceDeviated;
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      await loadState();
+      await loadBalances();
+      refreshPythOracleDisplay();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [loadState, loadBalances, refreshPythOracleDisplay]);
 
   const priceDisplay = onChainPriceRatio
     ? `1 devUSDT = ${onChainPriceRatio} SGDX`
@@ -770,7 +790,7 @@ export function SgdxVault() {
                 className="oracle-label"
                 style={{ color: pythOracleInfo ? "#34d399" : "#fbbf24" }}
               >
-                {pythOracleInfo ? "Live Pyth Oracle (Admin-Updated)" : "Mock Oracle"}
+                {pythOracleInfo ? pythOracleInfo.source : "Mock Oracle"}
               </span>
               <span className="oracle-price">{priceDisplay}</span>
             </div>
@@ -778,10 +798,48 @@ export function SgdxVault() {
           <p className="vault-subtitle">
             Mint SGDX stablecoin by depositing devUSDT collateral · Transfer fee: {SGDX_TRANSFER_FEE_BASIS_POINTS} bps (0.0{SGDX_TRANSFER_FEE_BASIS_POINTS}%) ·{" "}
             <span style={{ color: pythOracleInfo ? "#34d399" : "#00d4aa", fontWeight: 600 }}>
-              {pythOracleInfo ? `🟢 Live Pyth USD/SGD Rate (Phase 1.5)` : `🟢 Solana Devnet RPC`}
+              {pythOracleInfo ? `🟢 ${pythOracleInfo.source}` : `🟢 Solana Devnet RPC`}
             </span>
           </p>
         </div>
+
+        {/* ── On-chain Price Outdated Warning Banner ── */}
+        {vaultInitialized && isPriceOutdatedWarning && (
+          <div
+            className="vault-warning-banner"
+            style={{
+              background: "rgba(239, 68, 68, 0.14)",
+              borderColor: "rgba(239, 68, 68, 0.45)",
+              marginBottom: "1rem",
+            }}
+          >
+            <div className="warning-content">
+              <span className="warning-icon">⚠️</span>
+              <div>
+                <strong style={{ color: "#f87171" }}>
+                  On-chain price is outdated — admin should push update
+                </strong>
+                <p style={{ color: "#fca5a5" }}>
+                  {isOnChainStale
+                    ? `On-chain oracle price was last updated ${Math.floor(onChainAgeSeconds / 60)}m ${onChainAgeSeconds % 60}s ago (> 5 mins threshold). On-chain deposit & redeem operations will be rejected until updated.`
+                    : `Live price (${liveOraclePrice?.toFixed(4)}) differs from on-chain price (${onChainRatio?.toFixed(4)}) by ${priceDiffPercent.toFixed(2)}% (>= 1.0% threshold).`}
+                </p>
+              </div>
+            </div>
+            <button
+              className="btn-airdrop"
+              style={{
+                background: "rgba(239, 68, 68, 0.25)",
+                color: "#f87171",
+                border: "1px solid rgba(239, 68, 68, 0.6)",
+              }}
+              onClick={handlePushPythPrice}
+              disabled={pythStatus.status === STATUS.LOADING}
+            >
+              {pythStatus.status === STATUS.LOADING ? "Pushing Price..." : "⚡ Push Live Price Now"}
+            </button>
+          </div>
+        )}
 
         {/* ── Low SOL Warning Banner ── */}
         {solBalanceState.balance !== null && solBalanceState.balance < 0.002 && (

@@ -83,6 +83,14 @@ pub fn handler(ctx: Context<RedeemSgdx>, amount: u64) -> Result<()> {
 
     let vault_state = &ctx.accounts.vault_state;
 
+    // ── Freshness check: reject if on-chain price is older than MAX_PRICE_AGE_SECONDS ──
+    let clock = Clock::get()?;
+    let age = clock.unix_timestamp.saturating_sub(vault_state.last_price_update_timestamp);
+    require!(
+        age <= crate::state::MAX_PRICE_AGE_SECONDS,
+        VaultError::PriceStale
+    );
+
     // ── Calculate collateral to return ────────────────────────────────────
     // collateral_out = sgdx_amount × price_denominator / price_numerator
     // (inverse of deposit formula — rounds down, protecting vault solvency)

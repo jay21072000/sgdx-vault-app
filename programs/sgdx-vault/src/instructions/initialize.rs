@@ -78,9 +78,10 @@ pub fn handler(
     vault_state.vault_state_bump = ctx.bumps.vault_state;
     vault_state.price_numerator = price_numerator;
     vault_state.price_denominator = price_denominator;
+    vault_state.last_price_update_timestamp = Clock::get()?.unix_timestamp;
     vault_state.total_collateral_deposited = 0;
     vault_state.total_sgdx_minted = 0;
-    vault_state._reserved = [0u8; 64];
+    vault_state._reserved = [0u8; 56];
 
     msg!(
         "SGDX Vault initialized. Collateral: {}, SGDX mint: {}, Price: {}/{}",
