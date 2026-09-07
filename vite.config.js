@@ -201,16 +201,33 @@ export default defineConfig({
       protocolImports: true,
     }),
   ],
+  esbuild: {
+    keepNames: true,
+  },
   build: {
     target: 'esnext',
+    sourcemap: true,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/app-v2-[hash].js',
-        chunkFileNames: 'assets/[name]-v2-[hash].js',
-        assetFileNames: 'assets/[name]-v2-[hash].[ext]',
+        entryFileNames: 'assets/app-v3-[hash].js',
+        chunkFileNames: 'assets/[name]-v3-[hash].js',
+        assetFileNames: 'assets/[name]-v3-[hash].[ext]',
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (
+              id.includes('@solana') ||
+              id.includes('@noble') ||
+              id.includes('@coral-xyz') ||
+              id.includes('bs58') ||
+              id.includes('buffer')
+            ) {
+              return 'solana-vendor';
+            }
+          }
+        },
       },
     },
   },

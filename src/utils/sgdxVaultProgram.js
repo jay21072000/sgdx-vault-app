@@ -27,9 +27,21 @@ import * as borsh from "@coral-xyz/borsh";
 import { RPC_URL } from "../config";
 
 // ── Program ID ────────────────────────────────────────────────────────────
-export const SGDX_VAULT_PROGRAM_ID = new PublicKey(
-  "2vaoPv3xyoY7r8GWtcTNZxG7Q2a2j3JhC2qeu71JSmqq"
-);
+let _programId = null;
+export function getSGDXVaultProgramId() {
+  if (!_programId) {
+    _programId = new PublicKey("2vaoPv3xyoY7r8GWtcTNZxG7Q2a2j3JhC2qeu71JSmqq");
+  }
+  return _programId;
+}
+
+export const SGDX_VAULT_PROGRAM_ID = new Proxy({}, {
+  get(target, prop) {
+    const pid = getSGDXVaultProgramId();
+    const val = pid[prop];
+    return typeof val === 'function' ? val.bind(pid) : val;
+  }
+});
 
 // ── Transfer Fee Config (2 bps = 0.02%) ────────────────────────────────────
 export const SGDX_TRANSFER_FEE_BASIS_POINTS = 2;
@@ -37,18 +49,17 @@ export const SGDX_MAX_FEE = BigInt(1_000_000); // 1 SGDX max fee cap (6 decimals
 export const SGDX_DECIMALS = 6;
 export const COLLATERAL_DECIMALS = 6;
 
-// ── PDAs ───────────────────────────────────────────────────────────────────
 export function getVaultStatePDA() {
   return PublicKey.findProgramAddressSync(
     [Buffer.from("vault_state")],
-    SGDX_VAULT_PROGRAM_ID
+    getSGDXVaultProgramId()
   );
 }
 
 export function getVaultAuthorityPDA() {
   return PublicKey.findProgramAddressSync(
     [Buffer.from("vault_authority")],
-    SGDX_VAULT_PROGRAM_ID
+    getSGDXVaultProgramId()
   );
 }
 
@@ -67,18 +78,24 @@ export const DISCRIMINATORS = {
 };
 
 // ── Borsh layouts ──────────────────────────────────────────────────────────
-const VaultStateLayout = borsh.struct([
-  borsh.publicKey("authority"),
-  borsh.publicKey("collateral_mint"),
-  borsh.publicKey("sgdx_mint"),
-  borsh.u8("vault_authority_bump"),
-  borsh.u8("vault_state_bump"),
-  borsh.u64("price_numerator"),
-  borsh.u64("price_denominator"),
-  borsh.i64("last_price_update_timestamp"),
-  borsh.u64("total_collateral_deposited"),
-  borsh.u64("total_sgdx_minted"),
-]);
+let _vaultStateLayout = null;
+export function getVaultStateLayout() {
+  if (!_vaultStateLayout) {
+    _vaultStateLayout = borsh.struct([
+      borsh.publicKey("authority"),
+      borsh.publicKey("collateral_mint"),
+      borsh.publicKey("sgdx_mint"),
+      borsh.u8("vault_authority_bump"),
+      borsh.u8("vault_state_bump"),
+      borsh.u64("price_numerator"),
+      borsh.u64("price_denominator"),
+      borsh.i64("last_price_update_timestamp"),
+      borsh.u64("total_collateral_deposited"),
+      borsh.u64("total_sgdx_minted"),
+    ]);
+  }
+  return _vaultStateLayout;
+}
 
 /**
  * Fetch and decode VaultState from chain.
@@ -103,7 +120,7 @@ export async function fetchVaultState(connection) {
       if (json && json.result && json.result.value && json.result.value.data) {
         const rawBuffer = Buffer.from(json.result.value.data[0], "base64");
         const data = rawBuffer.slice(8);
-        return VaultStateLayout.decode(data);
+        return getVaultStateLayout().decode(data);
       }
     } catch (err) {
       console.warn("Direct fetchVaultState via rpcEndpoint error:", err.message);
@@ -114,7 +131,7 @@ export async function fetchVaultState(connection) {
     const accountInfo = await connection.getAccountInfo(vaultStatePDA);
     if (!accountInfo) return null;
     const data = accountInfo.data.slice(8);
-    return VaultStateLayout.decode(data);
+    return getVaultStateLayout().decode(data);
   } catch (e) {
     console.warn("connection.getAccountInfo error:", e.message);
     return null;
