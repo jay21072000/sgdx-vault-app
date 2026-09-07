@@ -212,23 +212,11 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/app-v3-[hash].js',
-        chunkFileNames: 'assets/[name]-v3-[hash].js',
-        assetFileNames: 'assets/[name]-v3-[hash].[ext]',
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (
-              id.includes('@solana') ||
-              id.includes('@noble') ||
-              id.includes('@coral-xyz') ||
-              id.includes('bs58') ||
-              id.includes('buffer')
-            ) {
-              return 'solana-vendor';
-            }
-          }
-        },
+        entryFileNames: 'assets/app-v4-[hash].js',
+        chunkFileNames: 'assets/[name]-v4-[hash].js',
+        assetFileNames: 'assets/[name]-v4-[hash].[ext]',
       },
     },
   },
 })
+
