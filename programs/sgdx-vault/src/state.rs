@@ -27,8 +27,10 @@ pub struct VaultState {
     pub total_collateral_deposited: u64,
     /// Total SGDX minted (in smallest units)
     pub total_sgdx_minted: u64,
-    /// Reserved space for future fields without redeployment
-    pub _reserved: [u8; 56],
+    /// Two-step authority transfer: proposed new authority (using 32 reserved bytes)
+    pub pending_authority: Pubkey,
+    /// Remaining reserved space for future fields without breaking layout
+    pub _reserved: [u8; 24],
 }
 
 impl VaultState {
@@ -44,7 +46,8 @@ impl VaultState {
         + 8    // last_price_update_timestamp
         + 8    // total_collateral_deposited
         + 8    // total_sgdx_minted
-        + 56;  // _reserved
+        + 32   // pending_authority
+        + 24;  // _reserved
 
     /// Calculate SGDX to mint for a given collateral deposit.
     /// Uses u128 intermediate math to prevent overflow.

@@ -37,4 +37,16 @@ pub enum VaultError {
 
     #[msg("On-chain price feed is stale (> 5 mins old). Admin must update price.")]
     PriceStale,
+
+    #[msg("Price update exceeds maximum allowed deviation limit (5%).")]
+    PriceDeviationTooLarge,
+
+    #[msg("Price update called too frequently. Minimum interval is 30 seconds.")]
+    PriceUpdateTooFrequent,
+
+    #[msg("Proposed new authority cannot be the default zero pubkey.")]
+    InvalidNewAuthority,
+
+    #[msg("Signer is not the proposed pending authority.")]
+    UnauthorizedPendingAuthority,
 }

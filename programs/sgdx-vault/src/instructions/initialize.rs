@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::Token,
-    token_interface::{Mint as InterfaceMint, TokenAccount as InterfaceTokenAccount, TokenInterface},
+    token_interface::{Mint as InterfaceMint, TokenInterface},
 };
 
 use crate::{errors::VaultError, state::VaultState};
@@ -81,7 +81,8 @@ pub fn handler(
     vault_state.last_price_update_timestamp = Clock::get()?.unix_timestamp;
     vault_state.total_collateral_deposited = 0;
     vault_state.total_sgdx_minted = 0;
-    vault_state._reserved = [0u8; 56];
+    vault_state.pending_authority = Pubkey::default();
+    vault_state._reserved = [0u8; 24];
 
     msg!(
         "SGDX Vault initialized. Collateral: {}, SGDX mint: {}, Price: {}/{}",
